@@ -10,6 +10,7 @@ import DevDashboard from './pages/DevDashboard';
 import Profile from './pages/Profile';
 import UserDashboard from './pages/UserDashboard'; // Dashboard para Pastor, Líder, etc.
 import EventsPage from './pages/EventsPage'; // Página de Eventos
+import MembersPage from './pages/MembersPage'; // Página de Membros
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, profile, loading } = useAuth();
@@ -64,6 +65,16 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <EventsPage />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Rota para Membros e Equipes */}
+      <Route 
+        path="/membros" 
+        element={
+          <ProtectedRoute>
+            <MembersPage />
           </ProtectedRoute>
         } 
       />
