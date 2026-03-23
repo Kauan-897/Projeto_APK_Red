@@ -4,10 +4,12 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 
 // Páginas Provisórias (Serão criadas em breve)
+import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import DevDashboard from './pages/DevDashboard';
 import Profile from './pages/Profile';
 import UserDashboard from './pages/UserDashboard'; // Dashboard para Pastor, Líder, etc.
+import EventsPage from './pages/EventsPage'; // Página de Eventos
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, profile, loading } = useAuth();
@@ -43,7 +45,7 @@ function AppRoutes() {
   
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
       <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
       
       {/* Rota para o Dashboard Dinâmico */}
@@ -52,6 +54,16 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             {profile?.role === 'desenvolvedor' ? <DevDashboard /> : <UserDashboard />}
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Rota para Eventos */}
+      <Route 
+        path="/eventos" 
+        element={
+          <ProtectedRoute>
+            <EventsPage />
           </ProtectedRoute>
         } 
       />

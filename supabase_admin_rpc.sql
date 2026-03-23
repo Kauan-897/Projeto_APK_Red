@@ -1,5 +1,5 @@
 -- Extensão para lidar com senhas criptografadas (bcrypt)
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 
 -- Função RPC para criar usuários diretamente do frontend (como Admin)
 CREATE OR REPLACE FUNCTION public.admin_create_user(
@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION public.admin_create_user(
 ) RETURNS UUID
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
   new_user_id UUID;
@@ -24,8 +24,8 @@ BEGIN
 
   -- Gera ID do usuário
   new_user_id := gen_random_uuid();
-  -- Criptografa a senha padrao (Supabase usa bcrypt)
-  encrypted_pw := crypt(new_password, gen_salt('bf'));
+  -- Criptografa a senha padrao garantindo a tipagem do texto
+  encrypted_pw := crypt(new_password, gen_salt('bf'::text));
 
   -- Insere o usuário direto na base de Autenticação do Supabase
   INSERT INTO auth.users (
@@ -37,9 +37,6 @@ BEGIN
       now(), now(), '', '', '', ''
   );
 
-  -- NOTA: Como você tem um Trigger (handle_new_user) rodando em auth.users, 
-  -- o perfil público (profiles) deste novo usuário será criado automaticamente pelo trigger!
-  
   RETURN new_user_id;
 END;
 $$;
