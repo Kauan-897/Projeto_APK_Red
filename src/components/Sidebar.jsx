@@ -21,7 +21,7 @@ export default function Sidebar({ children }) {
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Eventos', path: '/eventos', icon: CalendarDays },
     { name: 'Membros', path: '/membros', icon: Users },
-    { name: 'Escalas', path: '#!escalas', icon: CalendarClock },
+    { name: 'Escalas', path: '/escalas', icon: CalendarClock },
     { name: 'Pequenos Grupos', path: '#!pgs', icon: UsersRound },
     { name: 'Vídeos', path: '#!videos', icon: Video },
     { name: 'Notificações', path: '#!notificacoes', icon: Bell, badge: 5 },

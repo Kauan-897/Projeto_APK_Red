@@ -10,6 +10,7 @@ function Login() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [churchId, setChurchId] = useState('');
+  const [gender, setGender] = useState('');
   const [churches, setChurches] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -50,6 +51,9 @@ function Login() {
     if (!churchId && churches.length > 0) {
       return toast.error('Por favor, selecione uma igreja.');
     }
+    if (!gender) {
+      return toast.error('Por favor, selecione seu gênero biolígico.');
+    }
 
     setLoading(true);
     const { error } = await supabase.auth.signUp({
@@ -59,7 +63,8 @@ function Login() {
         data: {
           full_name: fullName,
           church_id: churchId || null,
-          role: 'membro'
+          role: 'membro',
+          gender: gender
         }
       }
     });
@@ -169,6 +174,18 @@ function Login() {
               {churches.map(church => (
                 <option key={church.id} value={church.id}>{church.name}</option>
               ))}
+            </select>
+
+            <label className="mb-1 font-semibold text-sm text-slate-300">Gênero</label>
+            <select 
+              className="px-4 py-3 mb-4 rounded-lg border border-slate-700/50 bg-slate-800/80 text-white focus:border-red-500 outline-none transition-all"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              required
+            >
+              <option value="">Selecione...</option>
+              <option value="M">Masculino</option>
+              <option value="F">Feminino</option>
             </select>
 
             <label className="mb-1 font-semibold text-sm text-slate-300">Email</label>

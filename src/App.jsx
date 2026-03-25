@@ -11,6 +11,7 @@ import Profile from './pages/Profile';
 import UserDashboard from './pages/UserDashboard'; // Dashboard para Pastor, Líder, etc.
 import EventsPage from './pages/EventsPage'; // Página de Eventos
 import MembersPage from './pages/MembersPage'; // Página de Membros
+import SchedulesPage from './pages/SchedulesPage'; // Página de Escalas
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, profile, loading } = useAuth();
@@ -75,6 +76,16 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <MembersPage />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Rota para Escalas */}
+      <Route 
+        path="/escalas" 
+        element={
+          <ProtectedRoute>
+            <SchedulesPage />
           </ProtectedRoute>
         } 
       />
