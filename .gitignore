@@ -25,7 +25,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
 # Database Scripts
 *.sql
 
+*env
+*md
