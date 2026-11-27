@@ -11,11 +11,15 @@ import {
   Bell, 
   UserPlus, 
   UserCircle, 
-  LogOut 
+  LogOut,
+  CreditCard
 } from 'lucide-react';
+import AccessBanner from './AccessBanner';
 
 export default function Sidebar({ children }) {
-  const { logout } = useAuth();
+  const { logout, profile } = useAuth();
+  const isChurchAdmin = ['pastor', 'admin'].includes(profile?.role);
+  const canInvite = ['pastor', 'admin', 'supervisor', 'lider_homem', 'lider_mulher'].includes(profile?.role);
 
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -25,9 +29,10 @@ export default function Sidebar({ children }) {
     { name: 'Pequenos Grupos', path: '#!pgs', icon: UsersRound },
     { name: 'Vídeos', path: '#!videos', icon: Video },
     { name: 'Notificações', path: '#!notificacoes', icon: Bell, badge: 5 },
-    { name: 'Convites', path: '#!convites', icon: UserPlus },
+    canInvite && { name: 'Convites', path: '/convites', icon: UserPlus },
+    { name: isChurchAdmin ? 'Assinatura' : 'Plano da igreja', path: '/assinatura', icon: CreditCard },
     { name: 'Minha Conta', path: '/perfil', icon: UserCircle },
-  ];
+  ].filter(Boolean);
 
   return (
     <div className="flex h-screen bg-[#0f172a] text-slate-300 font-sans overflow-hidden">
@@ -85,6 +90,7 @@ export default function Sidebar({ children }) {
 
       {/* Área Principal de Conteúdo */}
       <main className="flex-1 overflow-y-auto bg-[#0f172a] p-8">
+        <AccessBanner />
         {children}
       </main>
     </div>

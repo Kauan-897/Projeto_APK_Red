@@ -12,6 +12,10 @@ import UserDashboard from './pages/UserDashboard'; // Dashboard para Pastor, Lí
 import EventsPage from './pages/EventsPage'; // Página de Eventos
 import MembersPage from './pages/MembersPage'; // Página de Membros
 import SchedulesPage from './pages/SchedulesPage'; // Página de Escalas
+import Onboarding from './pages/Onboarding';
+import InvitePage from './pages/InvitePage';
+import InvitesPage from './pages/InvitesPage';
+import SubscriptionPage from './pages/SubscriptionPage';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, profile, loading } = useAuth();
@@ -20,6 +24,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Conta sem igreja: precisa aceitar um convite ou criar a igreja.
+  if (profile && !profile.church_id && profile.role !== 'desenvolvedor') {
+    return <Navigate to="/bem-vindo" replace />;
   }
 
   if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
@@ -42,6 +51,14 @@ const GuestRoute = ({ children }) => {
   return children;
 };
 
+// /bem-vindo: só para quem está logado e ainda não tem igreja
+const OnboardingRoute = () => {
+  const { user, profile } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (profile?.church_id || profile?.role === 'desenvolvedor') return <Navigate to="/dashboard" replace />;
+  return <Onboarding />;
+};
+
 function AppRoutes() {
   const { profile } = useAuth();
   
@@ -49,6 +66,10 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
       <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+      <Route path="/convite/:code" element={<InvitePage />} />
+      <Route path="/bem-vindo" element={<OnboardingRoute />} />
+      <Route path="/convites" element={<ProtectedRoute allowedRoles={['pastor', 'admin', 'supervisor', 'lider_homem', 'lider_mulher']}><InvitesPage /></ProtectedRoute>} />
+      <Route path="/assinatura" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
       
       {/* Rota para o Dashboard Dinâmico */}
       <Route 

@@ -1,26 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 function Login() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const [isLogin, setIsLogin] = useState(searchParams.get('modo') !== 'cadastro');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [churchId, setChurchId] = useState('');
   const [gender, setGender] = useState('');
-  const [churches, setChurches] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    // Buscar igrejas ativas
-    const fetchChurches = async () => {
-      const { data } = await supabase.from('churches').select('id, name').eq('is_active', true);
-      if (data) setChurches(data);
-    };
-    fetchChurches();
-  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -47,11 +38,8 @@ function Login() {
     if (password !== confirmPassword) {
       return toast.error('As senhas não coincidem!');
     }
-    if (!churchId && churches.length > 0) {
-      return toast.error('Por favor, selecione uma igreja.');
-    }
     if (!gender) {
-      return toast.error('Por favor, selecione seu gênero biolígico.');
+      return toast.error('Por favor, selecione seu gênero.');
     }
 
     setLoading(true);
@@ -61,7 +49,6 @@ function Login() {
       options: {
         data: {
           full_name: fullName,
-          church_id: churchId || null,
           gender: gender
         }
       }
@@ -74,7 +61,7 @@ function Login() {
         toast.error(error.message);
       }
     } else {
-      toast.success('Cadastro realizado! Verifique seu e-mail (se necessário) ou faça login.');
+      toast.success('Conta criada! Se pedirmos confirmação, verifique seu e-mail; depois é só entrar.');
       setIsLogin(true);
     }
     setLoading(false);
@@ -160,19 +147,6 @@ function Login() {
               onChange={(e) => setFullName(e.target.value)}
               required 
             />
-
-            <label className="mb-1 font-semibold text-sm text-slate-300">Igreja</label>
-            <select 
-              className="px-4 py-3 mb-4 rounded-lg border border-slate-700/50 bg-slate-800/80 text-white focus:border-red-500 outline-none transition-all"
-              value={churchId}
-              onChange={(e) => setChurchId(e.target.value)}
-              required={churches.length > 0}
-            >
-              <option value="">Selecione sua igreja...</option>
-              {churches.map(church => (
-                <option key={church.id} value={church.id}>{church.name}</option>
-              ))}
-            </select>
 
             <label className="mb-1 font-semibold text-sm text-slate-300">Gênero</label>
             <select 

@@ -38,6 +38,10 @@ select pg_temp.signup('44444444-4444-4444-4444-444444444444', 'hacker@teste.com'
 select pg_temp.signup('55555555-5555-5555-5555-555555555555', 'inativa@teste.com', '{"church_id":"c0000000-0000-0000-0000-00000000000c"}');
 
 select pg_temp.signup('66666666-6666-6666-6666-666666666666', 'supervisor.a@teste.com', '{"church_id":"a0000000-0000-0000-0000-00000000000a"}');
+-- Desde a Fase 2 a igreja não vem do cadastro (só convite); vincula como faria o servidor.
+update public.profiles set church_id = 'a0000000-0000-0000-0000-00000000000a'
+ where id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', '66666666-6666-6666-6666-666666666666');
+update public.profiles set church_id = 'b0000000-0000-0000-0000-00000000000b' where id = '33333333-3333-3333-3333-333333333333';
 update public.profiles set role = 'supervisor' where id = '66666666-6666-6666-6666-666666666666';
 update public.profiles set role = 'pastor' where id in ('11111111-1111-1111-1111-111111111111', '33333333-3333-3333-3333-333333333333');
 
@@ -57,8 +61,8 @@ insert into public.personal_notes (profile_id, church_id, content) values
 -- ------------------------------------------------------------------ cadastro
 select is((select role from public.profiles where id = '44444444-4444-4444-4444-444444444444'), 'membro',
   'cargo enviado no cadastro é ignorado');
-select is((select church_id from public.profiles where id = '55555555-5555-5555-5555-555555555555'), null,
-  'igreja inativa não é aceita no cadastro');
+select is((select count(*)::int from public.profiles where id in ('44444444-4444-4444-4444-444444444444', '55555555-5555-5555-5555-555555555555') and church_id is not null), 0,
+  'igreja enviada no cadastro é ignorada (entrada só por convite)');
 
 -- ------------------------------------------------------------------ membro A
 select pg_temp.login('22222222-2222-2222-2222-222222222222');
