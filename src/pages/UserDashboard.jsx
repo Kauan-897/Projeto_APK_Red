@@ -31,6 +31,7 @@ export default function UserDashboard() {
     if (profile?.church_id) {
       fetchDashboardData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- recarrega só quando o perfil muda
   }, [profile]);
 
   const fetchDashboardData = async () => {

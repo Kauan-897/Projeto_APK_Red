@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import Sidebar from '../components/Sidebar';
 import { ArrowLeft, Users, Building2, UsersRound, Plus, MapPin, X, ShieldAlert, ChevronRight, Search, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { generateTempPassword } from '../lib/password';
 
 export default function MembersPage() {
   const navigate = useNavigate();
@@ -36,17 +37,11 @@ export default function MembersPage() {
   const [memberName, setMemberName] = useState('');
   const [memberEmail, setMemberEmail] = useState('');
   const [memberRole, setMemberRole] = useState('membro');
-  const [memberPassword, setMemberPassword] = useState('Mudar@123');
+  const [memberPassword, setMemberPassword] = useState(generateTempPassword);
   const [memberGender, setMemberGender] = useState('M');
 
   // Roles that can manage
   const canManage = ['desenvolvedor', 'pastor', 'admin', 'supervisor'].includes(profile?.role);
-
-  useEffect(() => {
-    if (profile?.church_id) {
-      fetchData();
-    }
-  }, [profile]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -57,7 +52,7 @@ export default function MembersPage() {
       
       // Busca Ministérios 
       const { data: minData, error: mErr } = await supabase.from('ministries').select('*').eq('church_id', profile.church_id).order('name');
-      const { data: pmData } = await supabase.from('profile_ministries').select(`ministry_id, status, profile:profiles(id, name, avatar_url)`);
+      const { data: pmData } = await supabase.from('profile_ministries').select(`ministry_id, status, profile:profiles(id, full_name, avatar_url)`);
       
       if (!mErr && minData) {
          const minsWithParts = minData.map(min => ({
@@ -68,7 +63,7 @@ export default function MembersPage() {
       } else if (mErr) console.error("Erro Ministérios: ", mErr);
 
       // Busca Membros
-      const { data: memData } = await supabase.from('profiles').select('*').eq('church_id', profile.church_id).order('name');
+      const { data: memData } = await supabase.from('profiles').select('*').eq('church_id', profile.church_id).order('full_name');
       if (memData) setMembers(memData);
 
     } catch (err) {
@@ -76,6 +71,13 @@ export default function MembersPage() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (profile?.church_id) {
+      fetchData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- recarrega só quando o perfil muda
+  }, [profile]);
 
   const handleSaveBranch = async (e) => {
     e.preventDefault();
@@ -136,9 +138,9 @@ export default function MembersPage() {
 
     if (error) toast.error(error.message);
     else {
-       toast.success('Membro adicionado com sucesso!');
+       toast.success(`Membro adicionado! Senha provisória: ${memberPassword}`, { duration: 15000 });
        setIsMemberModalOpen(false);
-       setMemberName(''); setMemberEmail(''); setMemberRole('membro'); setMemberPassword('Mudar@123'); setMemberGender('M');
+       setMemberName(''); setMemberEmail(''); setMemberRole('membro'); setMemberPassword(generateTempPassword()); setMemberGender('M');
        fetchData();
     }
   };
@@ -216,7 +218,7 @@ export default function MembersPage() {
       }
   };
 
-  const filteredMembers = members.filter(m => m.name?.toLowerCase().includes(searchTerm.toLowerCase()) || m.email?.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredMembers = members.filter(m => m.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || m.email?.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredMinistries = ministries.filter(m => m.name?.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredBranches = branches.filter(b => b.name?.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -273,9 +275,9 @@ export default function MembersPage() {
                {filteredMembers.map(member => (
                  <div key={member.id} className="bg-slate-800 border border-slate-700 rounded-xl p-5 hover:border-slate-500 transition cursor-pointer flex items-center justify-between group">
                     <div className="flex items-center gap-4">
-                       <div className="w-12 h-12 rounded-full bg-slate-700 border-2 border-slate-600 flex items-center justify-center overflow-hidden shrink-0">{member.avatar_url ? <img src={member.avatar_url} className="w-full h-full object-cover" /> : <span className="text-lg font-bold text-slate-400">{member.name?.charAt(0).toUpperCase()}</span>}</div>
+                       <div className="w-12 h-12 rounded-full bg-slate-700 border-2 border-slate-600 flex items-center justify-center overflow-hidden shrink-0">{member.avatar_url ? <img src={member.avatar_url} className="w-full h-full object-cover" /> : <span className="text-lg font-bold text-slate-400">{member.full_name?.charAt(0).toUpperCase()}</span>}</div>
                        <div>
-                          <h4 className="font-bold text-white text-sm line-clamp-1">{member.name}</h4>
+                          <h4 className="font-bold text-white text-sm line-clamp-1">{member.full_name}</h4>
                           <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{member.email}</p>
                           <div className="mt-2">{getRoleBadge(member.role)}</div>
                        </div>
@@ -385,7 +387,7 @@ export default function MembersPage() {
                     {canManage || !editingMinistry ? (
                         <div className="flex flex-col gap-4">
                             <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Nome da Equipe</label><input type="text" value={ministryName} onChange={(e) => setMinistryName(e.target.value)} required className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500" /></div>
-                            <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Líder do Ministério</label><select value={ministryLeaderId} onChange={(e) => setMinistryLeaderId(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500"><option value="">Nenhum líder</option>{members.map(m => (<option key={m.id} value={m.id}>{m.name}</option>))}</select></div>
+                            <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Líder do Ministério</label><select value={ministryLeaderId} onChange={(e) => setMinistryLeaderId(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500"><option value="">Nenhum líder</option>{members.map(m => (<option key={m.id} value={m.id}>{m.full_name}</option>))}</select></div>
                             <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Descrição (Opcional)</label><textarea value={ministryDescription} onChange={(e) => setMinistryDescription(e.target.value)} rows={3} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 resize-none" /></div>
                         </div>
                     ) : (
@@ -408,9 +410,9 @@ export default function MembersPage() {
                                 {editingMinistry.participants.map(p => (
                                     <div key={p.profile.id} className="flex items-center justify-between p-3 bg-slate-900/50 border border-slate-800 rounded-xl">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-xs text-white overflow-hidden">{p.profile.avatar_url ? <img src={p.profile.avatar_url} className="w-full h-full object-cover"/> : p.profile.name.charAt(0)}</div>
+                                            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-xs text-white overflow-hidden">{p.profile.avatar_url ? <img src={p.profile.avatar_url} className="w-full h-full object-cover"/> : p.profile.full_name?.charAt(0)}</div>
                                             <div>
-                                                <p className="text-sm text-slate-200 font-medium leading-none mb-1">{p.profile.name}</p>
+                                                <p className="text-sm text-slate-200 font-medium leading-none mb-1">{p.profile.full_name}</p>
                                                 <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${p.status === 'ativo' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>{p.status}</span>
                                             </div>
                                         </div>

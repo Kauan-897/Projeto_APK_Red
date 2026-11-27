@@ -30,17 +30,11 @@ export default function SchedulesPage() {
   
   const canManage = ['desenvolvedor', 'pastor', 'admin', 'lider_homem', 'lider_mulher', 'supervisor'].includes(profile?.role);
 
-  useEffect(() => {
-    if (profile?.church_id) {
-      fetchData();
-    }
-  }, [profile]);
-
   const fetchData = async () => {
     setLoading(true);
     try {
       const { data: sData, error: sErr } = await supabase.from('schedules').select('*').eq('church_id', profile.church_id).order('date', { ascending: true });
-      const { data: smData, error: smErr } = await supabase.from('schedule_members').select(`id, schedule_id, role_name, status, profile:profiles(id, full_name)`);
+      const { data: smData } = await supabase.from('schedule_members').select(`id, schedule_id, role_name, status, profile:profiles(id, full_name)`);
 
       if (!sErr && sData) {
          const schedulesWithMembers = sData.map(sched => ({
@@ -71,6 +65,13 @@ export default function SchedulesPage() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (profile?.church_id) {
+      fetchData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- recarrega só quando o perfil muda
+  }, [profile]);
 
   const handleUpdateStatus = async (scheduleMemberId, newStatus) => {
      const { data, error } = await supabase.from('schedule_members').update({ status: newStatus }).eq('id', scheduleMemberId).select();

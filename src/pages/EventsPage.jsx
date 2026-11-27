@@ -33,12 +33,6 @@ export default function EventsPage() {
   // Calendário Params
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  useEffect(() => {
-    if (profile?.church_id) {
-      fetchEvents();
-    }
-  }, [profile]);
-
   const fetchEvents = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -52,6 +46,13 @@ export default function EventsPage() {
     else setEvents(data || []);
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (profile?.church_id) {
+      fetchEvents();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- recarrega só quando o perfil muda
+  }, [profile]);
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();

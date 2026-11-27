@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { generateTempPassword } from '../lib/password';
 
 export default function SedesManager() {
   const [churches, setChurches] = useState([]);
@@ -16,10 +17,6 @@ export default function SedesManager() {
   const [newUserChurch, setNewUserChurch] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchDados();
-  }, []);
-
   const fetchDados = async () => {
     const { data: cData } = await supabase.from('churches').select('*').order('created_at', { ascending: false });
     if (cData) setChurches(cData);
@@ -27,6 +24,11 @@ export default function SedesManager() {
     const { data: uData } = await supabase.from('profiles').select('*, churches(name)').order('created_at', { ascending: false });
     if (uData) setUsers(uData);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetchDados é assíncrono; o setState ocorre após o await
+    fetchDados();
+  }, []);
 
   const handleCreateSede = async (e) => {
     e.preventDefault();
@@ -68,9 +70,10 @@ export default function SedesManager() {
     if (!newUserChurch) return toast.error('Selecione uma sede/igreja!');
     
     setLoading(true);
-    const { data, error } = await supabase.rpc('admin_create_user', {
+    const tempPassword = generateTempPassword();
+    const { error } = await supabase.rpc('admin_create_user', {
         new_email: newUserEmail,
-        new_password: 'Mudar123@',
+        new_password: tempPassword,
         new_fullname: newUserFullName,
         new_role: newUserRole,
         new_church_id: newUserChurch
@@ -79,7 +82,7 @@ export default function SedesManager() {
     if (error) {
       toast.error('Erro ao criar usuário: ' + error.message);
     } else {
-      toast.success('Usuário criado com sucesso com a senha Mudar123@');
+      toast.success(`Usuário criado! Senha provisória: ${tempPassword}`, { duration: 15000 });
       setNewUserEmail('');
       setNewUserFullName('');
       fetchDados();
@@ -140,7 +143,7 @@ export default function SedesManager() {
 
       {/* SEÇÃO DE USUÁRIOS */}
       <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-        <h3 className="text-xl font-bold mb-4 text-white">Cadastrar Novo Usuário (Senha Padrão: Mudar123@)</h3>
+        <h3 className="text-xl font-bold mb-4 text-white">Cadastrar Novo Usuário (senha provisória gerada automaticamente)</h3>
         <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <input 
             type="text" 

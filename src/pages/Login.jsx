@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
 function Login() {
@@ -17,7 +16,7 @@ function Login() {
   useEffect(() => {
     // Buscar igrejas ativas
     const fetchChurches = async () => {
-      const { data, error } = await supabase.from('churches').select('id, name').eq('is_active', true);
+      const { data } = await supabase.from('churches').select('id, name').eq('is_active', true);
       if (data) setChurches(data);
     };
     fetchChurches();
@@ -63,7 +62,6 @@ function Login() {
         data: {
           full_name: fullName,
           church_id: churchId || null,
-          role: 'membro',
           gender: gender
         }
       }
