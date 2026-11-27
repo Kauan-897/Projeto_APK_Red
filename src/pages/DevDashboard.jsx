@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import SedesManager from '../components/SedesManager';
+import SubscriptionsAdmin from '../components/SubscriptionsAdmin';
 
 export default function DevDashboard() {
   const { profile, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState(null);
+  const [activeTab, setActiveTab] = useState('assinaturas');
 
   const tabs = [
+    { id: 'assinaturas', title: 'Assinaturas e Testes', icon: '💳' },
     { id: 'videos', title: 'Gerenciar Vídeos', icon: '🎥' },
     { id: 'eventos', title: 'Eventos', icon: '📅' },
     { id: 'membros', title: 'Cargos e Membros / Sedes', icon: '👥' },
@@ -44,6 +46,8 @@ export default function DevDashboard() {
           <div className="mt-8">
             {activeTab === 'membros' ? (
               <SedesManager />
+            ) : activeTab === 'assinaturas' ? (
+              <SubscriptionsAdmin />
             ) : (
               <div className="p-6 bg-slate-900 rounded-lg border border-slate-700 animate-fade-in">
                 <h3 className="text-2xl font-bold text-white mb-2">

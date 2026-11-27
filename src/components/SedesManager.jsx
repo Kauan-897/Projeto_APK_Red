@@ -176,7 +176,6 @@ export default function SedesManager() {
             onChange={(e) => setNewUserRole(e.target.value)}
           >
             <option value="membro">Membro</option>
-            <option value="funcionario">Funcionário</option>
             <option value="pastor">Pastor</option>
             <option value="lider_homem">Líder (Homem)</option>
             <option value="lider_mulher">Líder (Mulher)</option>

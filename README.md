@@ -93,6 +93,33 @@ update public.profiles set role = 'desenvolvedor' where email = 'pessoa@exemplo.
 
 ---
 
+## SaaS: igrejas, convites e assinaturas
+
+- **Nova igreja:** quem cria conta sem convite pode cadastrar a própria igreja e vira o pastor dela.
+  Toda igreja nova ganha **14 dias de teste grátis**.
+- **Membros entram só por convite:** pastor/admin geram links em **Convites** (cargo, número de usos e validade).
+  Supervisor gera convites só de membro.
+- **Planos por faixa de membros** na tabela `plans` (preços em centavos, editáveis sem deploy).
+- **Sem acesso** (teste vencido, pagamento atrasado há mais de 7 dias ou cancelada), a igreja fica em
+  **modo somente leitura**: vê tudo, não grava nada.
+- **Admin da plataforma:** no dashboard, em *Assinaturas e Testes*, estende/encurta o teste de cada igreja ou libera como cortesia.
+
+### Configurar o Asaas
+
+1. Crie uma conta no [sandbox do Asaas](https://sandbox.asaas.com) e gere a chave da API.
+2. No Supabase, em *Edge Functions → Secrets*, cadastre:
+   - `ASAAS_API_KEY`: a chave da API
+   - `ASAAS_BASE_URL`: `https://api-sandbox.asaas.com/v3` (em produção, `https://api.asaas.com/v3`)
+   - `ASAAS_WEBHOOK_TOKEN`: um texto aleatório e longo
+3. Publique as funções: `npx supabase functions deploy asaas-checkout asaas-webhook`
+4. No Asaas, em *Integrações → Webhooks*, aponte para
+   `https://<ref-do-projeto>.supabase.co/functions/v1/asaas-webhook`, usando o mesmo token do passo 2,
+   com os eventos de cobrança (`PAYMENT_*`) e de assinatura (`SUBSCRIPTION_*`).
+
+Para testar localmente: `npx supabase functions serve --env-file <arquivo-com-as-variaveis>`.
+
+---
+
 ## Fluxo de trabalho da equipe
 
 - Nunca commite direto na `main`: crie uma branch (`feat/...`, `fix/...`) e abra um Pull Request.
