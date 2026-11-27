@@ -8,6 +8,25 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchProfile = async (userId) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      alert('Erro do Supabase ao ler o perfil:\n\n' + error.message + '\nDetails: ' + error.details);
+    } else if (!data) {
+      alert('Seu usuário está autenticado, mas seu perfil não foi encontrado na tabela "profiles" no banco de dados!');
+    }
+
+    if (!error && data) {
+      setProfile(data);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
     // Pegar a sessão atual
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -35,25 +54,6 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const fetchProfile = async (userId) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      alert('Erro do Supabase ao ler o perfil:\n\n' + error.message + '\nDetails: ' + error.details);
-    } else if (!data) {
-      alert('Seu usuário está autenticado, mas seu perfil não foi encontrado na tabela "profiles" no banco de dados!');
-    }
-
-    if (!error && data) {
-      setProfile(data);
-    }
-    setLoading(false);
-  };
-
   const logout = async () => {
     await supabase.auth.signOut();
   };
@@ -72,6 +72,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook exportado junto do Provider
 export const useAuth = () => {
   return useContext(AuthContext);
 };

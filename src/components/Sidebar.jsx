@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export default function Sidebar({ children }) {
-  const { profile, logout } = useAuth();
+  const { logout } = useAuth();
 
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
