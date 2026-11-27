@@ -7,7 +7,6 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import DevDashboard from './pages/DevDashboard';
-import Profile from './pages/Profile';
 import UserDashboard from './pages/UserDashboard'; // Dashboard para Pastor, Líder, etc.
 import EventsPage from './pages/EventsPage'; // Página de Eventos
 import MembersPage from './pages/MembersPage'; // Página de Membros
@@ -16,8 +15,11 @@ import Onboarding from './pages/Onboarding';
 import InvitePage from './pages/InvitePage';
 import InvitesPage from './pages/InvitesPage';
 import SubscriptionPage from './pages/SubscriptionPage';
+import MyDataPage from './pages/MyDataPage';
+import LegalPage from './pages/LegalPage';
+import ConsentGate from './components/ConsentGate';
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
+const ProtectedRoute = ({ children, allowedRoles, allowNoChurch = false }) => {
   const { user, profile, loading } = useAuth();
 
   if (loading) return <div>Carregando...</div>;
@@ -27,7 +29,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   // Conta sem igreja: precisa aceitar um convite ou criar a igreja.
-  if (profile && !profile.church_id && profile.role !== 'desenvolvedor') {
+  if (!allowNoChurch && profile && !profile.church_id && profile.role !== 'desenvolvedor') {
     return <Navigate to="/bem-vindo" replace />;
   }
 
@@ -35,7 +37,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return children;
+  // LGPD: nada abre sem o aceite dos termos e do consentimento para dado sensível.
+  return <ConsentGate>{children}</ConsentGate>;
 };
 
 // Se usuário estiver logado e tentar ir para o login, redireciona
@@ -56,7 +59,7 @@ const OnboardingRoute = () => {
   const { user, profile } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
   if (profile?.church_id || profile?.role === 'desenvolvedor') return <Navigate to="/dashboard" replace />;
-  return <Onboarding />;
+  return <ConsentGate><Onboarding /></ConsentGate>;
 };
 
 function AppRoutes() {
@@ -67,6 +70,9 @@ function AppRoutes() {
       <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
       <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
       <Route path="/convite/:code" element={<InvitePage />} />
+      <Route path="/termos" element={<LegalPage doc="termos" />} />
+      <Route path="/privacidade" element={<LegalPage doc="privacidade" />} />
+      <Route path="/meus-dados" element={<ProtectedRoute allowNoChurch><MyDataPage /></ProtectedRoute>} />
       <Route path="/bem-vindo" element={<OnboardingRoute />} />
       <Route path="/convites" element={<ProtectedRoute allowedRoles={['pastor', 'admin', 'supervisor', 'lider_homem', 'lider_mulher']}><InvitesPage /></ProtectedRoute>} />
       <Route path="/assinatura" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
@@ -111,14 +117,7 @@ function AppRoutes() {
         } 
       />
 
-      <Route 
-        path="/perfil" 
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } 
-      />
+      <Route path="/perfil" element={<Navigate to="/meus-dados" replace />} />
     </Routes>
   );
 }

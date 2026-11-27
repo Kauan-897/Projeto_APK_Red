@@ -40,7 +40,12 @@ export default function UserDashboard() {
       const churchId = profile.church_id;
 
       // Buscar Estatísticas Básicas
-      const { count: membersCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('church_id', churchId);
+      // Dados pessoais dos membros só chegam agregados ou pela função church_members (LGPD).
+      const [{ data: demo }, { data: members }] = await Promise.all([
+        supabase.rpc('church_demographics'),
+        supabase.rpc('church_members'),
+      ]);
+      const membersCount = demo?.total ?? 0;
       const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
       const { count: eventsCount } = await supabase.from('events').select('*', { count: 'exact', head: true }).eq('church_id', churchId).gte('date', startOfMonth);
       const { count: videosCount } = await supabase.from('videos').select('*', { count: 'exact', head: true }).eq('church_id', churchId);
@@ -62,31 +67,9 @@ export default function UserDashboard() {
       });
 
       // --- NOVOS DADOS DASHBOARD ---
-      const { data: allProfiles } = await supabase.from('profiles').select('id, full_name, email, gender, birth_date, created_at, avatar_url').eq('church_id', churchId);
-      
-      let males = 0, females = 0;
-      let ageGroups = { '0-12': 0, '13-17': 0, '18-25': 0, '26-40': 0, '41-60': 0, '60+': 0 };
-
-      if (allProfiles) {
-         allProfiles.forEach(p => {
-             if (p.gender === 'M') males++;
-             else if (p.gender === 'F') females++;
-
-             if (p.birth_date) {
-                 const age = new Date().getFullYear() - new Date(p.birth_date).getFullYear();
-                 if (age <= 12) ageGroups['0-12']++;
-                 else if (age <= 17) ageGroups['13-17']++;
-                 else if (age <= 25) ageGroups['18-25']++;
-                 else if (age <= 40) ageGroups['26-40']++;
-                 else if (age <= 60) ageGroups['41-60']++;
-                 else ageGroups['60+']++;
-             }
-         });
-         
-         const sortedSignups = [...allProfiles].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-         setRecentSignups(sortedSignups.slice(0, 5));
-      }
-      setDemographics({ males, females, ageGroups });
+      setDemographics({ males: demo?.males ?? 0, females: demo?.females ?? 0, ageGroups: demo?.ageGroups ?? {} });
+      const sortedSignups = [...(members ?? [])].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setRecentSignups(sortedSignups.slice(0, 5));
 
       // Anotações Pessoais
       const { data: notesData } = await supabase.from('personal_notes').select('*').eq('profile_id', profile.id).order('created_at', { ascending: false });
@@ -121,7 +104,7 @@ export default function UserDashboard() {
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
       const oneWeekAgoISO = oneWeekAgo.toISOString();
 
-      const { data: rProfiles } = await supabase.from('profiles').select('*').eq('church_id', churchId).gte('created_at', oneWeekAgoISO).order('created_at', { ascending: false }).limit(3);
+      const rProfiles = (members ?? []).filter((m) => m.created_at >= oneWeekAgoISO).sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 3);
       const { data: rEvents } = await supabase.from('events').select('*').eq('church_id', churchId).gte('created_at', oneWeekAgoISO).order('created_at', { ascending: false }).limit(3);
       const { data: rVideos } = await supabase.from('videos').select('*').eq('church_id', churchId).gte('created_at', oneWeekAgoISO).order('created_at', { ascending: false }).limit(3);
 

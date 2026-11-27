@@ -31,6 +31,11 @@ select pg_temp.signup('a1111111-0000-0000-0000-000000000003', 'convidado2@teste.
 select pg_temp.signup('a1111111-0000-0000-0000-000000000004', 'atrasado@teste.com');
 select pg_temp.signup('a1111111-0000-0000-0000-000000000009', 'dev@teste.com');
 update public.profiles set role = 'desenvolvedor' where id = 'a1111111-0000-0000-0000-000000000009';
+-- Desde a Fase 3 (LGPD) é preciso consentir antes de criar igreja ou aceitar convite.
+insert into public.consents (profile_id, kind, version, granted)
+select p.id, v.kind, v.version, true
+  from public.profiles p cross join public.legal_versions v
+ where v.kind in ('termos', 'dados_religiosos') and p.email like '%@teste.com';
 
 -- ------------------------------------------------------------------ assinaturas
 select is((select count(*)::int from public.churches c

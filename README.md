@@ -120,6 +120,27 @@ Para testar localmente: `npx supabase functions serve --env-file <arquivo-com-as
 
 ---
 
+## LGPD
+
+Pertencer a uma igreja revela convicção religiosa: **dado pessoal sensível** (LGPD art. 5º, II).
+Por isso o app foi desenhado assim:
+
+| Exigência | Como o app cumpre |
+|---|---|
+| Consentimento específico e destacado (art. 11, I) | Tela obrigatória antes de usar o app; sem ela não se cria nem se entra em igreja (garantido no banco) |
+| Registro do consentimento (art. 8º) | Tabela `consents`, só de inclusão, com versão do texto e data |
+| Dados de crianças (art. 14) | Consentimento próprio do responsável; revogar apaga os dados dos filhos |
+| Minimização (art. 6º, III) | Membros veem só nome, foto e cargo uns dos outros; contato e dados pessoais só o titular e a liderança (permissões por coluna) |
+| Direitos do titular (art. 18) | *Meus dados*: corrigir, baixar tudo em JSON, revogar, sair da igreja, excluir a conta |
+| Registro das operações (art. 37) | `audit_log`: cargos, entradas/saídas, exportações, exclusões |
+| Encarregado (art. 41) | Contato do encarregado por igreja, em *Meus dados* |
+
+**Antes de vender:** preencha os dados da empresa em `src/legal/documents.js` e peça a um
+advogado para revisar os textos. Ao alterar um texto, atualize a versão no arquivo **e** em
+`public.legal_versions` (nova migration): todos terão de aceitar de novo.
+
+---
+
 ## Fluxo de trabalho da equipe
 
 - Nunca commite direto na `main`: crie uma branch (`feat/...`, `fix/...`) e abra um Pull Request.

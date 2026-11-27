@@ -21,7 +21,7 @@ export default function SedesManager() {
     const { data: cData } = await supabase.from('churches').select('*').order('created_at', { ascending: false });
     if (cData) setChurches(cData);
 
-    const { data: uData } = await supabase.from('profiles').select('*, churches(name)').order('created_at', { ascending: false });
+    const { data: uData } = await supabase.rpc('admin_list_profiles');
     if (uData) setUsers(uData);
   };
 
@@ -204,7 +204,7 @@ export default function SedesManager() {
                   <td className="px-4 py-3 text-white font-medium">{u.full_name || '---'}</td>
                   <td className="px-4 py-3">{u.email}</td>
                   <td className="px-4 py-3 uppercase text-xs font-bold text-red-400">{u.role}</td>
-                  <td className="px-4 py-3">{u.churches?.name || '---'}</td>
+                  <td className="px-4 py-3">{u.church_name || '---'}</td>
                 </tr>
               ))}
             </tbody>

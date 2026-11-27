@@ -8,14 +8,13 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   // Situação da assinatura da igreja (teste, pago, somente leitura...)
   const [access, setAccess] = useState(null);
+  // Situação dos consentimentos LGPD (termos, dados religiosos, filhos)
+  const [consents, setConsents] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = useCallback(async (userId) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+  const fetchProfile = useCallback(async () => {
+    // Perfil completo só pela função my_profile (minimização de dados, LGPD).
+    const { data, error } = await supabase.rpc('my_profile').single();
 
     if (error) {
       console.error('Erro ao ler o perfil:', error);
@@ -26,6 +25,9 @@ export const AuthProvider = ({ children }) => {
       }
     }
     setProfile(data ?? null);
+
+    const { data: consentData } = await supabase.rpc('consent_status');
+    setConsents(consentData ?? null);
 
     if (data?.church_id) {
       const { data: accessData } = await supabase.rpc('my_church_access');
@@ -54,6 +56,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         setProfile(null);
         setAccess(null);
+        setConsents(null);
         setLoading(false);
       }
     });
@@ -75,6 +78,7 @@ export const AuthProvider = ({ children }) => {
     user,
     profile,
     access,
+    consents,
     loading,
     logout,
     refreshProfile,

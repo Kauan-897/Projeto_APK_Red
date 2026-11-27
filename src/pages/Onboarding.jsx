@@ -89,9 +89,12 @@ export default function Onboarding() {
           </form>
         )}
 
-        <button onClick={logout} className="mt-8 flex items-center gap-2 text-slate-500 hover:text-white text-sm">
-          <LogOut className="w-4 h-4" /> Sair
-        </button>
+        <div className="mt-8 flex items-center gap-6 text-sm">
+          <button onClick={logout} className="flex items-center gap-2 text-slate-500 hover:text-white">
+            <LogOut className="w-4 h-4" /> Sair
+          </button>
+          <button onClick={() => navigate('/meus-dados')} className="text-slate-500 hover:text-white">Meus dados e privacidade</button>
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -204,6 +204,12 @@ function Login() {
             Esqueci minha senha
           </div>
         )}
+
+        <p className="mt-6 text-xs text-slate-500">
+          <Link to="/termos" className="hover:text-white">Termos de Uso</Link>
+          {' · '}
+          <Link to="/privacidade" className="hover:text-white">Política de Privacidade</Link>
+        </p>
       </div>
     </div>
   );

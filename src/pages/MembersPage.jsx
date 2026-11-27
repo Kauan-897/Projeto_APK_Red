@@ -63,7 +63,8 @@ export default function MembersPage() {
       } else if (mErr) console.error("Erro Ministérios: ", mErr);
 
       // Busca Membros
-      const { data: memData } = await supabase.from('profiles').select('*').eq('church_id', profile.church_id).order('full_name');
+      // Membros comuns recebem só nome/foto/cargo; contato fica com a liderança (LGPD).
+      const { data: memData } = await supabase.rpc('church_members');
       if (memData) setMembers(memData);
 
     } catch (err) {

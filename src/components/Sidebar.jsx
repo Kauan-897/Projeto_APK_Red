@@ -31,7 +31,7 @@ export default function Sidebar({ children }) {
     { name: 'Notificações', path: '#!notificacoes', icon: Bell, badge: 5 },
     canInvite && { name: 'Convites', path: '/convites', icon: UserPlus },
     { name: isChurchAdmin ? 'Assinatura' : 'Plano da igreja', path: '/assinatura', icon: CreditCard },
-    { name: 'Minha Conta', path: '/perfil', icon: UserCircle },
+    { name: 'Meus dados', path: '/meus-dados', icon: UserCircle },
   ].filter(Boolean);
 
   return (
